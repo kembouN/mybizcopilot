@@ -34,7 +34,7 @@ public class ClientController {
     }
 
     @GetMapping("/{idClient}")
-    @Operation(description = "Afficher les information sur un client")
+    @Operation(description = "Afficher les informations sur un client")
     public ResponseEntity<BaseResponse<ClientResponse>> getClient(@PathVariable Integer idClient) {
         return ResponseEntity.ok(
                 new BaseResponse<>(
@@ -52,7 +52,7 @@ public class ClientController {
         return ResponseEntity.ok(
                 new BaseResponse<>(
                         HttpStatus.OK.value(),
-                        "",
+                        "Liste des clients de l'entreprise",
                         clientService.getAllClient(idEntreprise)
                 )
         );

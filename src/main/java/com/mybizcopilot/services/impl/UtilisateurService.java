@@ -5,9 +5,12 @@ import com.mybizcopilot.config.JwtUtil;
 import com.mybizcopilot.dto.requests.ChangePasswordRequest;
 import com.mybizcopilot.dto.requests.LoginRequest;
 import com.mybizcopilot.dto.requests.RegisterRequest;
+import com.mybizcopilot.dto.responses.EntrepriseResponse;
 import com.mybizcopilot.dto.responses.LoginResponse;
+import com.mybizcopilot.entities.Entreprise;
 import com.mybizcopilot.entities.Utilisateur;
 import com.mybizcopilot.exception.OperationNonPermittedException;
+import com.mybizcopilot.repositories.EntrepriseRepository;
 import com.mybizcopilot.repositories.UtilisateurRepository;
 import com.mybizcopilot.services.IUtilisateurService;
 import com.mybizcopilot.utils.UtilService;
@@ -24,6 +27,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @AllArgsConstructor
 @Service
@@ -44,6 +49,8 @@ public class UtilisateurService implements IUtilisateurService {
     private ObjectValidator<ChangePasswordRequest> changePasswordValidator;
 
     private AuthenticationManager authManager;
+
+    private EntrepriseRepository entrepriseRepository;
 
     private static final Logger log = LoggerFactory.getLogger(UtilisateurService.class);
 
@@ -88,12 +95,30 @@ public class UtilisateurService implements IUtilisateurService {
         user.setDerniereconnexion(LocalDate.now());
         utilisateurRepository.save(user);
 
+        List<Entreprise> entreprises = entrepriseRepository.findAllByUtilisateurIdUtilisateur(user.getIdUtilisateur());
+        List<EntrepriseResponse> entrepriseResponses = new ArrayList<>();
+        for (Entreprise entreprise: entreprises) {
+            if (entreprise != null){
+                entrepriseResponses.add(
+                        EntrepriseResponse.builder()
+                                .ville(entreprise.getVille())
+                                .pays(entreprise.getPays())
+                                .nom(entreprise.getNomEntreprise())
+                                .email(entreprise.getEmailEntreprise())
+                                .entrepriseId(entreprise.getIdEntreprise())
+                                .logo(entreprise.getLogoEntreprise())
+                                .build()
+                );
+            }
+        }
+
         return LoginResponse.builder()
                 .token(jwtUtil.createJwtToken(user))
                 .email(user.getUsername())
                 .username(user.getNomUtilisateur())
                 .idUser(user.getIdUtilisateur())
                 .lastconnexion(LocalDate.now())
+                .entreprises(entrepriseResponses)
                 .build();
     }
 

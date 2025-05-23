@@ -26,4 +26,9 @@ public class ClientResponse {
     private String statut;
 
     private String tranche;
+
+    private Integer trancheId;
+
+    private Integer typeprospectId;
+
 }

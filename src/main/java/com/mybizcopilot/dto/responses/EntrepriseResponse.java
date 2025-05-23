@@ -16,7 +16,9 @@ public class EntrepriseResponse {
 
     private String email;
 
-    private String localisation;
+    private String pays;
+
+    private String ville;
 
     private byte[] logo;
 

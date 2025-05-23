@@ -11,6 +11,7 @@ import com.mybizcopilot.services.IEntrepriseService;
 import com.mybizcopilot.utils.UtilService;
 import com.mybizcopilot.validator.ObjectValidator;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,8 @@ public class EntrepriseService implements IEntrepriseService {
                         .codeEntreprise(utilService.generateEnterpriseCode())
                         .descriptionEntreprise(request.getDescription())
                         .emailEntreprise(request.getEmail())
-                        .localisation(request.getLocalisation())
+                        .pays(request.getPays())
+                        .ville(request.getVille())
                         .nomEntreprise(request.getNom().trim())
                         .utilisateur(user)
                         .telephone1Entreprise(request.getTelephone1())
@@ -72,7 +74,8 @@ public class EntrepriseService implements IEntrepriseService {
                 .code(entreprise.getCodeEntreprise())
                 .description(entreprise.getDescriptionEntreprise())
                 .email(entreprise.getEmailEntreprise())
-                .localisation(entreprise.getLocalisation())
+                .pays(entreprise.getPays())
+                .ville(entreprise.getVille())
                 .logo(entreprise.getLogoEntreprise())
                 .nom(entreprise.getNomEntreprise())
                 .telephone1(entreprise.getTelephone1Entreprise())
@@ -89,8 +92,6 @@ public class EntrepriseService implements IEntrepriseService {
 
         List<Entreprise> entreprises = entrepriseRepository.findAllByUtilisateurIdUtilisateur(idUser);
 
-        log.info("entreprises", entreprises);
-
         List<EntrepriseResponse> result = new ArrayList<>();
 
         if (!entreprises.isEmpty()){
@@ -100,7 +101,8 @@ public class EntrepriseService implements IEntrepriseService {
                                 .entrepriseId(enterprise.getIdEntreprise())
                                 .code(enterprise.getCodeEntreprise())
                                 .email(enterprise.getEmailEntreprise())
-                                .localisation(enterprise.getLocalisation())
+                                .pays(enterprise.getPays())
+                                .ville(enterprise.getVille())
                                 .description(enterprise.getDescriptionEntreprise())
                                 .logo(enterprise.getLogoEntreprise())
                                 .nom(enterprise.getNomEntreprise())
@@ -116,6 +118,7 @@ public class EntrepriseService implements IEntrepriseService {
     }
 
     @Override
+    @Transactional
     public Entreprise updateEntreprise(Integer idEnterprise, EntrepriseRequest request) {
         entrepriseValidator.validate(request);
         Entreprise entreprise = entrepriseRepository.findById(idEnterprise)
@@ -130,7 +133,8 @@ public class EntrepriseService implements IEntrepriseService {
 
         entreprise.setDescriptionEntreprise(request.getDescription());
         entreprise.setEmailEntreprise(request.getEmail());
-        entreprise.setLocalisation(request.getLocalisation());
+        entreprise.setPays(request.getPays());
+        entreprise.setVille(request.getVille());
         entreprise.setNomEntreprise(request.getNom());
         entreprise.setTelephone1Entreprise(request.getTelephone1());
         entreprise.setTelephone2Entreprise(request.getTelephone2());

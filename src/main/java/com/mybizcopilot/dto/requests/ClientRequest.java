@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Data
 public class ClientRequest {
 
-    @NotNull
+    @NotNull(message = "Nous n'avons pas pu trouver vos informations")
     private Integer idUser;
 
     //@NotNull(message = "Veuillez sélectionner le service désiré par le client")
@@ -34,7 +34,7 @@ public class ClientRequest {
     @NotEmpty(message = "Veuillez entrer le nom du client")
     private String nom;
 
-    private boolean isClient;
+    private Integer isClient;
 
     @NotEmpty(message = "Veuillez entrer au moins un numéro de téléphone")
     private String telephoneUn;
@@ -47,6 +47,6 @@ public class ClientRequest {
 
 
     public void checkTypeProspect(){
-        if (!isClient && idTypeprospect == null) throw new OperationNonPermittedException("Veuillez chosir un type de prospect correspondant");
+        if (isClient == 0 && idTypeprospect == 0) throw new OperationNonPermittedException("Veuillez choisir un type de prospect correspondant");
     }
 }

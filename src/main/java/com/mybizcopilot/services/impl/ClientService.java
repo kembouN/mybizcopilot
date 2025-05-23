@@ -12,6 +12,8 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +49,8 @@ public class ClientService implements IClientService {
     @Autowired
     private CommandeRepository commandeRepository;
 
+    private static final Logger log = LoggerFactory.getLogger(ClientService.class);
+
 
     @Override
     @Transactional
@@ -54,12 +58,12 @@ public class ClientService implements IClientService {
         clientValidator.validate(request);
         request.checkTypeProspect();
 
-        //Entreprise entreprise = entrepriseRepository.findById(request.getIdEntreprise()).get();//.orElseThrow(() -> {throw new OperationNonPermittedException("L'entreprise est introuvable");
+        Entreprise entreprise = entrepriseRepository.findById(request.getIdEntreprise()).orElseThrow(() -> new OperationNonPermittedException("Les informations de votre entreprise sont introuvables"));
 
-        //Utilisateur user = utilisateurRepository.findById(request.getIdUser()).get();//.orElseThrow(() -> {throw new OperationNonPermittedException("Nous rencontrons une erreur avec votre compte");});
+        Utilisateur user = utilisateurRepository.findById(request.getIdUser()).orElseThrow(() -> new OperationNonPermittedException("Nous rencontrons une erreur avec votre compte"));
 
-        /*if (user.getIdUtilisateur() != entreprise.getUtilisateur().getIdUtilisateur())
-            throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");*/
+        if (user.getIdUtilisateur() != entreprise.getUtilisateur().getIdUtilisateur())
+            throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
 
         Tranche tranche = trancheRepository.findById(request.getIdTranche()).orElseThrow(() -> new OperationNonPermittedException("La plage d'âge sélectionnée n'existe pas"));
 
@@ -71,14 +75,14 @@ public class ClientService implements IClientService {
                         .telephoneDeux(request.getTelephoneDeux())
                         .emailUn(request.getEmailUn())
                         .emailDeux(request.getEmailDeux())
-                        .isClient(request.isClient() ? 1 : 0)
+                        .isClient(request.getIsClient())
+                .entreprise(entreprise)
                         .build();
         if (request.getIdTypeprospect() != 0 && request.getIdTypeprospect() != null){
             Typeprospect typeprospect = typeprospectRepository.findById(request.getIdTypeprospect()).orElseThrow(() -> new OperationNonPermittedException("Vous n'avez pas renseigner le type de prospect"));
             client.setTypeProspect(typeprospect);
         }
         clientRepository.save(client);
-
 
         return null;
     }
@@ -104,15 +108,12 @@ public class ClientService implements IClientService {
 
     @Override
     public List<ClientResponse> getAllClient(Integer idEntreprise) {
-        Entreprise entreprise = entrepriseRepository.findById(idEntreprise).orElseThrow(() -> {throw new EntityNotFoundException("Aucune entreprise n'est retrouvée");});
+        Entreprise entreprise = entrepriseRepository.findById(idEntreprise).orElseThrow(() ->  new EntityNotFoundException("Aucune entreprise n'est retrouvée"));
 
-        List<Commande> commandes = commandeRepository.findDistinctByServiceEntrepriseIdEntreprise(idEntreprise);
-
-        List<ClientResponse> clients = new ArrayList<>();
-        for (Commande commande: commandes) {
-            Client client = clientRepository.findById(commande.getClient().getIdClient()).get();
-            if (client != null) {
-                clients.add(
+        List<Client> clients = clientRepository.findAllByEntreprise(entreprise);
+        List<ClientResponse> result = new ArrayList<>();
+        for (Client client: clients) {
+                result.add(
                         ClientResponse.builder()
                                 .idClient(client.getIdClient())
                                 .code(client.getCodeClient())
@@ -123,41 +124,45 @@ public class ClientService implements IClientService {
                                 .nomClient(client.getNomClient())
                                 .statut(client.getIsClient() == 1 ? "Client" : client.getTypeProspect().getLibelleTypeprospect())
                                 .tranche(client.getTranche().getLibelleTranche())
+                                .typeprospectId(client.getTypeProspect() != null ? client.getTypeProspect().getIdTypeprospect() : null)
+                                .trancheId(client.getTranche().getIdTranche())
                                 .build()
                 );
-            }
         }
-        return clients;
+        return result;
     }
 
     @Override
+    @Transactional
     public ClientResponse updateClient(Integer idClient, ClientRequest request) {
         clientValidator.validate(request);
         request.checkTypeProspect();
-        Client client = clientRepository.findById(idClient).orElseThrow(() -> {throw new EntityNotFoundException("Le client sélectionné est introuvable");});
 
-        Entreprise entreprise = entrepriseRepository.findById(request.getIdEntreprise()).orElseThrow(() -> {throw new OperationNonPermittedException("L'entreprise est introuvable");
-        });
+        Client client = clientRepository.findById(idClient).orElseThrow(() -> new EntityNotFoundException("Le client sélectionné est introuvable"));
+        Entreprise entreprise = entrepriseRepository.findById(request.getIdEntreprise()).orElseThrow(() -> new OperationNonPermittedException("L'entreprise est introuvable"));
 
-        Utilisateur user = utilisateurRepository.findById(request.getIdUser()).orElseThrow(() -> {throw new OperationNonPermittedException("Nous rencontrons une erreur avec votre compte");});
+        Utilisateur user = utilisateurRepository.findById(request.getIdUser()).orElseThrow(() -> new OperationNonPermittedException("Nous rencontrons une erreur avec votre compte"));
 
         if (user.getIdUtilisateur() != entreprise.getUtilisateur().getIdUtilisateur())
             throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
 
-        Tranche tranche = trancheRepository.findById(request.getIdTranche()).orElseThrow(() -> {throw new OperationNonPermittedException("La plage d'âge sélectionnée n'existe pas");});
+        Tranche tranche = trancheRepository.findById(request.getIdTranche()).orElseThrow(() -> new OperationNonPermittedException("La plage d'âge sélectionnée n'existe pas"));
         Typeprospect typeprospect = new Typeprospect();
 
-        if (!request.isClient())
-            typeprospect = typeprospectRepository.findById(request.getIdTypeprospect()).orElseThrow(() -> {throw new OperationNonPermittedException("Vous n'avez pas renseigner le type de prospect");});
 
         client.setTranche(tranche);
-        client.setTypeProspect(typeprospect);
         client.setNomClient(request.getNom());
         client.setTelephoneUn(request.getTelephoneUn());
         client.setTelephoneDeux(request.getTelephoneDeux());
         client.setEmailUn(request.getEmailUn());
         client.setEmailDeux(request.getEmailDeux());
-        client.setIsClient(request.isClient() ? 1 : 0);
+        client.setIsClient(request.getIsClient());
+        if (request.getIdTypeprospect() != 0 && request.getIdTypeprospect() != null){
+            typeprospect = typeprospectRepository.findById(request.getIdTypeprospect()).orElseThrow(() -> new OperationNonPermittedException("Vous n'avez pas renseigner le type de prospect"));
+            client.setTypeProspect(typeprospect);
+        }else {
+            client.setTypeProspect(null);
+        }
 
         Client savedClient = clientRepository.save(client);
         return ClientResponse.builder()
@@ -192,6 +197,8 @@ public class ClientService implements IClientService {
                                 .telephoneDeux(client.getTelephoneDeux())
                                 .statut(client.getIsClient() == 1 ? "Client" : client.getTypeProspect().getLibelleTypeprospect())
                                 .tranche(client.getTranche().getLibelleTranche())
+                                .typeprospectId( client.getTypeProspect() != null ? client.getTypeProspect().getIdTypeprospect() : null)
+                                .trancheId(client.getTranche().getIdTranche())
                                 .build()
                 );
             }

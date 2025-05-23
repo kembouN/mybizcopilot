@@ -10,4 +10,5 @@ public interface EntrepriseRepository extends JpaRepository<Entreprise, Integer>
     List<Entreprise> findAllByUtilisateurIdUtilisateur(Integer idUser);
 
     int countByNomEntreprise(String Entreprise);
+
 }

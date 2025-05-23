@@ -5,6 +5,7 @@ import com.mybizcopilot.dto.requests.EntrepriseRequest;
 import com.mybizcopilot.dto.responses.BaseResponse;
 import com.mybizcopilot.dto.responses.ClientResponse;
 import com.mybizcopilot.dto.responses.EntrepriseResponse;
+import com.mybizcopilot.entities.Entreprise;
 import com.mybizcopilot.services.IEntrepriseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,6 +44,18 @@ public class EntrepriseController {
                         HttpStatus.OK.value(),
                         "",
                         entrepriseService.getAllEntrepriseByUser(idUtilisateur)
+                )
+        );
+    }
+
+    @PutMapping("/{idEntreprise}")
+    @Operation(description = "Mettre à jour une entreprise")
+    public ResponseEntity<BaseResponse<Entreprise>> updateEnterprise(@PathVariable Integer idEntreprise, @RequestBody EntrepriseRequest request) {
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "Mise à jour effectuée",
+                        entrepriseService.updateEntreprise(idEntreprise, request)
                 )
         );
     }

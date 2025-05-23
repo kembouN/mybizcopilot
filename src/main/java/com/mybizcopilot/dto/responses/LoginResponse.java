@@ -4,6 +4,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,4 +23,6 @@ public class LoginResponse {
     private Integer idUser;
 
     private String token;
+
+    List<EntrepriseResponse> entreprises;
 }

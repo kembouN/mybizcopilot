@@ -32,7 +32,9 @@ public class Entreprise extends BaseEntity {
 
     private String telephone2Entreprise;
 
-    private String localisation;
+    private String pays;
+
+    private String ville;
 
     private String descriptionEntreprise;
 

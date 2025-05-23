@@ -27,8 +27,12 @@ public class Client extends BaseEntity{
     private String codeClient;
 
     @ManyToOne
-    @JoinColumn(name = "id_typeprospect", nullable = false)
+    @JoinColumn(name = "id_typeprospect")
     private Typeprospect typeProspect;
+
+    @ManyToOne
+    @JoinColumn(name = "id_entreprise")
+    private Entreprise entreprise;
 
     private String nomClient;
 
