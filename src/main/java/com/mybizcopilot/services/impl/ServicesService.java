@@ -39,8 +39,7 @@ public class ServicesService implements IServicesService {
     @Transactional
     public Void ajouterService(ServiceRequest request) {
         serviceValidator.validate(request);
-        if (serviceRepository.countByLibelleServiceIgnoreCase(request.getLibelle().toLowerCase().trim()) > 0){
-            log.error("Service existant déjà");
+        if (serviceRepository.countByLibelleService(request.getLibelle().toLowerCase().trim()) > 0){
             throw new OperationNonPermittedException("Un service avec ce libellé existe déjà");
         }
 
@@ -103,7 +102,7 @@ public class ServicesService implements IServicesService {
 
     @Override
     public ServiceResponse updateService(Integer idService, ServiceRequest request) {
-        if (serviceRepository.countByLibelleServiceIgnoreCase(request.getLibelle().trim()) > 0){
+        if (serviceRepository.countByLibelleServiceWhereIdServiceNot(request.getLibelle().trim(), idService) > 0){
             log.error("Service existant");
             throw new OperationNonPermittedException("Un service avec ce libellé existe déjà");
         }

@@ -44,12 +44,19 @@ public class ClientService implements IClientService {
     private TypeprospectRepository typeprospectRepository;
 
     @Autowired
+    private PaysRepository paysRepository;
+
+    @Autowired
     private UtilService utilService;
 
     @Autowired
     private CommandeRepository commandeRepository;
 
     private static final Logger log = LoggerFactory.getLogger(ClientService.class);
+
+    private final String PERSONNE_PHYSIQUE = "PERSONNE PHYSIQUE";
+
+    private final String PERSONNE_MORALE = "PERSONNE MORALE";
 
 
     @Override
@@ -65,22 +72,31 @@ public class ClientService implements IClientService {
         if (user.getIdUtilisateur() != entreprise.getUtilisateur().getIdUtilisateur())
             throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
 
-        Tranche tranche = trancheRepository.findById(request.getIdTranche()).orElseThrow(() -> new OperationNonPermittedException("La plage d'âge sélectionnée n'existe pas"));
+        Pays pays = paysRepository.findById(request.getPaysId()).orElseThrow(() -> new EntityNotFoundException("Le pays choisit est introuvable"));
 
         Client client = Client.builder()
                         .codeClient(utilService.generateClientCode())
-                        .tranche(tranche)
                         .nomClient(request.getNom())
                         .telephoneUn(request.getTelephoneUn())
                         .telephoneDeux(request.getTelephoneDeux())
                         .emailUn(request.getEmailUn())
                         .emailDeux(request.getEmailDeux())
                         .isClient(request.getIsClient())
-                .entreprise(entreprise)
+                        .entreprise(entreprise)
+                        .typeClient(request.getTypeClient())
+                        .agentLiaison(request.getAgentLiaison())
+                        .pays(pays)
+                        .ville(request.getVille())
+                        .adresse(request.getAdresse())
                         .build();
+
         if (request.getIdTypeprospect() != 0 && request.getIdTypeprospect() != null){
             Typeprospect typeprospect = typeprospectRepository.findById(request.getIdTypeprospect()).orElseThrow(() -> new OperationNonPermittedException("Vous n'avez pas renseigner le type de prospect"));
             client.setTypeProspect(typeprospect);
+        }
+        if (request.getIdTranche() != null) {
+            Tranche tranche = trancheRepository.findById(request.getIdTranche()).orElseThrow(() -> new OperationNonPermittedException("La plage d'âge sélectionnée n'existe pas"));
+            client.setTranche(tranche);
         }
         clientRepository.save(client);
 
@@ -103,6 +119,11 @@ public class ClientService implements IClientService {
                 .nomClient(client.getNomClient())
                 .statut(client.getIsClient() == 1 ? "Client" : client.getTypeProspect().getLibelleTypeprospect())
                 .tranche(client.getTranche().getLibelleTranche())
+                .ville(client.getVille())
+                .adresse(client.getAdresse())
+                .agentLiaison(client.getAgentLiaison())
+                .typeClient(client.getTypeClient())
+                .pays(client.getPays())
                 .build();
     }
 
@@ -123,9 +144,14 @@ public class ClientService implements IClientService {
                                 .telephoneDeux(client.getTelephoneDeux())
                                 .nomClient(client.getNomClient())
                                 .statut(client.getIsClient() == 1 ? "Client" : client.getTypeProspect().getLibelleTypeprospect())
-                                .tranche(client.getTranche().getLibelleTranche())
+                                .tranche(client.getTranche() != null ? client.getTranche().getLibelleTranche() : null)
                                 .typeprospectId(client.getTypeProspect() != null ? client.getTypeProspect().getIdTypeprospect() : null)
-                                .trancheId(client.getTranche().getIdTranche())
+                                .trancheId(client.getTranche() != null ? client.getTranche().getIdTranche() : null)
+                                .ville(client.getVille())
+                                .adresse(client.getAdresse())
+                                .agentLiaison(client.getAgentLiaison())
+                                .typeClient(client.getTypeClient())
+                                .pays(client.getPays())
                                 .build()
                 );
         }
@@ -146,11 +172,9 @@ public class ClientService implements IClientService {
         if (user.getIdUtilisateur() != entreprise.getUtilisateur().getIdUtilisateur())
             throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
 
-        Tranche tranche = trancheRepository.findById(request.getIdTranche()).orElseThrow(() -> new OperationNonPermittedException("La plage d'âge sélectionnée n'existe pas"));
         Typeprospect typeprospect = new Typeprospect();
 
 
-        client.setTranche(tranche);
         client.setNomClient(request.getNom());
         client.setTelephoneUn(request.getTelephoneUn());
         client.setTelephoneDeux(request.getTelephoneDeux());
@@ -164,6 +188,13 @@ public class ClientService implements IClientService {
             client.setTypeProspect(null);
         }
 
+        if (request.getIdTranche() != 0 && request.getIdTranche() != null){
+            Tranche tranche = trancheRepository.findById(request.getIdTranche()).orElseThrow(() -> new OperationNonPermittedException("La plage d'âge sélectionnée n'existe pas"));
+            client.setTranche(tranche);
+        }else {
+            client.setTranche(null);
+        }
+
         Client savedClient = clientRepository.save(client);
         return ClientResponse.builder()
                 .idClient(savedClient.getIdClient())
@@ -175,6 +206,11 @@ public class ClientService implements IClientService {
                 .nomClient(savedClient.getNomClient())
                 .statut(savedClient.getIsClient() == 1 ? "Client" : client.getTypeProspect().getLibelleTypeprospect())
                 .tranche(savedClient.getTranche().getLibelleTranche())
+                .ville(savedClient.getVille())
+                .adresse(savedClient.getAdresse())
+                .agentLiaison(savedClient.getAgentLiaison())
+                .typeClient(savedClient.getTypeClient())
+                .pays(savedClient.getPays())
                 .build();
     }
 
@@ -199,6 +235,11 @@ public class ClientService implements IClientService {
                                 .tranche(client.getTranche().getLibelleTranche())
                                 .typeprospectId( client.getTypeProspect() != null ? client.getTypeProspect().getIdTypeprospect() : null)
                                 .trancheId(client.getTranche().getIdTranche())
+                                .ville(client.getVille())
+                                .adresse(client.getAdresse())
+                                .agentLiaison(client.getAgentLiaison())
+                                .typeClient(client.getTypeClient())
+                                .pays(client.getPays())
                                 .build()
                 );
             }
@@ -206,5 +247,11 @@ public class ClientService implements IClientService {
 
         return result;
     }
+
+    @Override
+    public List<Pays> getAllPays() {
+        return paysRepository.findAll();
+    }
+
 
 }

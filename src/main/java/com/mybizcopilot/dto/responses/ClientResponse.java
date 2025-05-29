@@ -1,5 +1,6 @@
 package com.mybizcopilot.dto.responses;
 
+import com.mybizcopilot.entities.Pays;
 import lombok.*;
 
 @NoArgsConstructor
@@ -30,5 +31,15 @@ public class ClientResponse {
     private Integer trancheId;
 
     private Integer typeprospectId;
+
+    private String ville;
+
+    private String adresse;
+
+    private String agentLiaison;
+
+    private String typeClient;
+
+    private Pays pays;
 
 }

@@ -32,4 +32,6 @@ public class EntrepriseResponse {
 
     private String responsable;
 
+    private Integer nbrClient;
+
 }

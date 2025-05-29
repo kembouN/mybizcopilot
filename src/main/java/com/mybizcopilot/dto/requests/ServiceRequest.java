@@ -14,27 +14,21 @@ import lombok.NoArgsConstructor;
 @Data
 public class ServiceRequest {
 
-    @NotNull
+    @NotNull(message = "Nous n'avons pas pu trouver vos informations")
     private Integer idUser;
 
     @NotNull(message = "L'entreprise n'est pas reconnue")
     private Integer idEntreprise;
 
-    @NotEmpty(message = "Veuillez entrer une description du service")
     private String description;
 
-    @NotEmpty(message = "Veuillez entrer un nom pour le service")
+    @NotEmpty(message = "Veuillez entrer un libellé pour le service")
     private String libelle;
 
     private Integer dureeInitiale;
 
-    @NotNull(message = "Entrez le prix initial pour ce service")
     private Double prixInitial;
 
     private Integer qteInitiale;
 
-    private void checkTypeService(){
-        if (dureeInitiale == null && qteInitiale == null)
-            throw new OperationNonPermittedException("Vous devez renseignez soit la durée de réalisation, soit la quantité");
-    }
 }

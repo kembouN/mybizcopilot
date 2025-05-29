@@ -18,13 +18,9 @@ public class ClientRequest {
     @NotNull(message = "Nous n'avons pas pu trouver vos informations")
     private Integer idUser;
 
-    //@NotNull(message = "Veuillez sélectionner le service désiré par le client")
-    private Integer idService;
-
-    //@NotNull(message = "l'entreprise correspondante n'est pas renseigné")
+    @NotNull(message = "l'entreprise n'est pas reconnue")
     private Integer idEntreprise;
 
-    @NotEmpty(message = "Veuillez entrer au moins une adresse e-mail")
     @Email(message = "Le format du premier email est incorrect")
     private String emailUn;
 
@@ -34,19 +30,34 @@ public class ClientRequest {
     @NotEmpty(message = "Veuillez entrer le nom du client")
     private String nom;
 
+    @NotEmpty(message = "A quel type appartient le client?")
+    private String typeClient;
+
+    private String agentLiaison;
+
+    @NotNull(message = "S'agit-il d'un client ou d'un prospect")
     private Integer isClient;
 
-    @NotEmpty(message = "Veuillez entrer au moins un numéro de téléphone")
     private String telephoneUn;
 
+    @NotEmpty(message = "Veuillez entrer au moins un numéro de téléphone")
     private String telephoneDeux;
 
     private Integer idTranche;
+
+    @NotNull(message = "Veuillez renseigner le pays du client")
+    private Integer paysId;
+
+    private String ville;
+
+    private String adresse;
 
     private Integer idTypeprospect;
 
 
     public void checkTypeProspect(){
-        if (isClient == 0 && idTypeprospect == 0) throw new OperationNonPermittedException("Veuillez choisir un type de prospect correspondant");
+        if (isClient == 0 && idTypeprospect == null) throw new OperationNonPermittedException("Veuillez choisir un type de prospect correspondant");
+
+        if (typeClient.equals("PERSONNE MORALE") && agentLiaison == null) throw new OperationNonPermittedException("Veuillez renseigner le nom de l'agent de liaison pour ce type de client");
     }
 }

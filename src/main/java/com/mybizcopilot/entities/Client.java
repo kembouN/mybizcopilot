@@ -2,6 +2,7 @@ package com.mybizcopilot.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;
 import java.util.Set;
@@ -31,8 +32,18 @@ public class Client extends BaseEntity{
     private Typeprospect typeProspect;
 
     @ManyToOne
+    @JoinColumn(name = "id_pays")
+    private Pays pays;
+
+    @ManyToOne
     @JoinColumn(name = "id_entreprise")
     private Entreprise entreprise;
+
+    @Column(nullable = false)
+    private String typeClient;
+
+    @ColumnDefault("0")
+    private Integer tel1IsWhatsapp;
 
     private String nomClient;
 
@@ -40,10 +51,16 @@ public class Client extends BaseEntity{
 
     private String telephoneDeux;
 
+    private String agentLiaison;
+
     private String emailUn;
 
     private String emailDeux;
 
     private Integer isClient;
+
+    private String ville;
+
+    private String adresse;
 
 }

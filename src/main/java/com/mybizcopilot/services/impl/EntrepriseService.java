@@ -5,6 +5,7 @@ import com.mybizcopilot.dto.responses.EntrepriseResponse;
 import com.mybizcopilot.entities.Entreprise;
 import com.mybizcopilot.entities.Utilisateur;
 import com.mybizcopilot.exception.OperationNonPermittedException;
+import com.mybizcopilot.repositories.ClientRepository;
 import com.mybizcopilot.repositories.EntrepriseRepository;
 import com.mybizcopilot.repositories.UtilisateurRepository;
 import com.mybizcopilot.services.IEntrepriseService;
@@ -34,6 +35,9 @@ public class EntrepriseService implements IEntrepriseService {
 
     @Autowired
     private UtilisateurRepository utilisateurRepository;
+
+    @Autowired
+    private ClientRepository clientRepository;
 
     @Autowired
     private UtilService utilService;
@@ -86,9 +90,8 @@ public class EntrepriseService implements IEntrepriseService {
 
     @Override
     public List<EntrepriseResponse> getAllEntrepriseByUser(Integer idUser) {
-        log.info("debut de récupération...");
         Utilisateur utilisateur = utilisateurRepository.findById(idUser)
-                .orElseThrow(()-> {log.error("Utilisateur introuvable"); throw new EntityNotFoundException("Compte utilisateur introuvable");});
+                .orElseThrow(()-> new EntityNotFoundException("Compte utilisateur introuvable"));
 
         List<Entreprise> entreprises = entrepriseRepository.findAllByUtilisateurIdUtilisateur(idUser);
 
@@ -109,6 +112,7 @@ public class EntrepriseService implements IEntrepriseService {
                                 .telephone1(enterprise.getTelephone1Entreprise())
                                 .telephone2(enterprise.getTelephone2Entreprise())
                                 .responsable(enterprise.getUtilisateur().getUsername())
+                                .nbrClient(clientRepository.findAllByEntreprise(enterprise).size())
                                 .build()
                 );
             }
