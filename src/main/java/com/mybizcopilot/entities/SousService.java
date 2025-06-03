@@ -2,6 +2,7 @@ package com.mybizcopilot.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @NoArgsConstructor
@@ -16,15 +17,20 @@ public class SousService extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idSousservice;
 
-    private String libelle;
-
-    private String description;
-
     @ManyToOne
     @JoinColumn(name = "id_service")
     private Service service;
 
+    private String libelle;
+
+    private String description;
+
     private Integer duree;
 
-    private char uniteDuree;
+    @Enumerated(EnumType.STRING)
+    private UniteTemps uniteDuree;
+
+    @ColumnDefault("1")
+    private Integer isActive;
+
 }

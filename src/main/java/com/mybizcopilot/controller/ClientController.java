@@ -8,6 +8,7 @@ import com.mybizcopilot.services.IClientService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ import java.util.List;
 @RequestMapping("/api/v1")
 public class ClientController {
 
+    @Autowired
     private IClientService clientService;
 
     @PostMapping("/client")

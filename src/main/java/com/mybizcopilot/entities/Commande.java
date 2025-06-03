@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -22,17 +23,10 @@ public class Commande extends BaseEntity{
     @JoinColumn(name = "id_client")
     private Client client;
 
-    @ManyToOne
-    @JoinColumn(name = "id_service")
-    private Service service;
+    @OneToMany(mappedBy = "commande")
+    private List<ElementCommande> elementsCommande;
 
     private LocalDate dateContact;
-
-    private LocalDate dateDebut;
-
-    private Integer quantite;
-
-    private Integer duree;
 
     private LocalDate dateFin;
 
@@ -46,7 +40,7 @@ public class Commande extends BaseEntity{
 
     private LocalDate datePaiement;
 
-    private String statutCommande;
-
+    @Enumerated(EnumType.STRING)
+    private StatutCommande statutCommande;
 
 }

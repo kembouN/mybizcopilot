@@ -1,5 +1,6 @@
 package com.mybizcopilot.dto.responses;
 
+import com.mybizcopilot.entities.Pays;
 import lombok.*;
 
 @NoArgsConstructor
@@ -16,7 +17,7 @@ public class EntrepriseResponse {
 
     private String email;
 
-    private String pays;
+    private Pays pays;
 
     private String ville;
 

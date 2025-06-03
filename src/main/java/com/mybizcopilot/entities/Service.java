@@ -2,6 +2,7 @@ package com.mybizcopilot.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 @Entity
 @NoArgsConstructor
@@ -30,4 +31,7 @@ public class Service extends BaseEntity{
     private Integer dureeInitiale;
 
     private Double prixInitial;
+
+    @ColumnDefault("1")
+    private Integer isActive;
 }

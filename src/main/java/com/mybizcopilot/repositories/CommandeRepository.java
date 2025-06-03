@@ -8,7 +8,6 @@ import java.util.List;
 
 public interface CommandeRepository extends JpaRepository<Commande, Integer> {
 
-    List<Commande> findAllByServiceEntrepriseIdEntreprise(Integer idEntreprise);
+    List<Commande> findAllByClientEntrepriseIdEntreprise(Integer idEntreprise);
 
-    List<Commande> findDistinctByServiceEntrepriseIdEntreprise(Integer idEntreprise);
 }

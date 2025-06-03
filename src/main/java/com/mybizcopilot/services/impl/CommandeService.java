@@ -1,16 +1,12 @@
 package com.mybizcopilot.services.impl;
 
 import com.mybizcopilot.dto.requests.CommandeRequest;
-import com.mybizcopilot.dto.responses.ClientResponse;
+import com.mybizcopilot.dto.requests.ElementCommandeRequest;
 import com.mybizcopilot.dto.responses.CommandeResponse;
-import com.mybizcopilot.dto.responses.ServiceResponse;
-import com.mybizcopilot.entities.Client;
-import com.mybizcopilot.entities.Commande;
-import com.mybizcopilot.entities.Entreprise;
-import com.mybizcopilot.repositories.ClientRepository;
-import com.mybizcopilot.repositories.CommandeRepository;
-import com.mybizcopilot.repositories.EntrepriseRepository;
-import com.mybizcopilot.repositories.ServiceRepository;
+import com.mybizcopilot.dto.responses.ElementCommandeDto;
+import com.mybizcopilot.entities.*;
+import com.mybizcopilot.exception.OperationNonPermittedException;
+import com.mybizcopilot.repositories.*;
 import com.mybizcopilot.services.ICommandeService;
 import com.mybizcopilot.validator.ObjectValidator;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,9 +25,11 @@ public class CommandeService implements ICommandeService {
 
     private ObjectValidator<CommandeRequest> commandeValidator;
 
-    private ServiceRepository serviceRepository;
+    private SousServiceRepository sousServiceRepository;
 
     private ClientRepository clientRepository;
+
+    private ElementCommandeRepository elementCommandeRepository;
 
     private EntrepriseRepository entrepriseRepository;
 
@@ -41,38 +39,46 @@ public class CommandeService implements ICommandeService {
     public Void ajouterCommande(CommandeRequest request) {
         commandeValidator.validate(request);
         request.checkSomeField();
-        com.mybizcopilot.entities.Service service = serviceRepository.findById(request.getIdService())
-                .orElseThrow(() -> new EntityNotFoundException("Le service sélectionné est introuvable"));
 
         Client client = clientRepository.findById(request.getIdClient())
                 .orElseThrow(() -> new EntityNotFoundException("Le client choisit est introuvable"));
 
-        double cout = 0;
-        if (request.getQte() != null)
-            cout = (service.getPrixInitial() * request.getQte()) / service.getQuantiteInitiale();
+        Double montant = 0.0;
+        if (request.getItems().isEmpty() || request.getItems().size() == 0)
+            throw new OperationNonPermittedException("Aucun service n'est commandé");
+        List<ElementCommande> elementCommandes = new ArrayList<>();
+        for (ElementCommandeDto element : request.getItems()) {
+            SousService sousService = sousServiceRepository.findById(element.getIdSousservice()).get();
+            if (sousService != null) {
+                montant += element.getQuantite() * element.getPrix();
+                elementCommandes.add(
+                        com.mybizcopilot.entities.ElementCommande.builder()
+                                .sousService(sousService)
+                                .quantite(element.getQuantite())
+                                .prix(element.getPrix())
+                                .build()
+                );
+            }
+        }
 
-        if (request.getDuree() != null)
-            cout = (request.getDuree() * service.getPrixInitial()) / service.getDureeInitiale();
-
-        //if (request.getDateFin() == null && (request.getStatut() == "TERMINEE" || request.getStatut() == "LIVREE"))
-
-        commandeRepository.save(
+        Commande commande = commandeRepository.save(
                 Commande.builder()
-                        .service(service)
                         .client(client)
                         .avanceCout(request.getAvance())
-                        .cout(cout)
+                        .cout(montant)
                         .dateAvance(request.getDateAvance())
                         .dateContact(request.getDateContact())
-                        .dateDebut(request.getDateDebut())
-                        .quantite(request.getQte())
-                        .duree(request.getDuree())
-                        .paye(request.isPaye() ? 1 : 0)
+                        .paye(request.getPaye())
                         .datePaiement(request.getDatePaiement() != null ? request.getDatePaiement() : null)
-                        .statutCommande(!request.getStatut().isEmpty() ? request.getStatut() : "EN ATTENTE")
+                        .statutCommande(StatutCommande.EN_ATTENTE)
                         .dateFin(request.getDateFin())
                         .build()
         );
+        for (com.mybizcopilot.entities.ElementCommande elementComande : elementCommandes) {
+            elementComande.setCommande(commande);
+            elementCommandeRepository.save(elementComande);
+        }
+
         return null;
     }
 
@@ -83,13 +89,8 @@ public class CommandeService implements ICommandeService {
 
         return CommandeResponse.builder()
                 .idCommande(commande.getIdCommande())
-                .client(commande.getService().getLibelleService())
-                .service(commande.getClient().getNomClient())
                 .dateCommande(commande.getDateContact())
-                .dateDebut(commande.getDateDebut())
                 .dateFin(commande.getDateFin())
-                .qte(commande.getQuantite())
-                .duree(commande.getDuree())
                 .avance(commande.getAvanceCout())
                 .cout(commande.getCout())
                 .dateAvance(commande.getDateAvance())
@@ -102,27 +103,36 @@ public class CommandeService implements ICommandeService {
     public List<CommandeResponse> listeCommandes(Integer idEntreprise) {
         Entreprise entreprise = entrepriseRepository.findById(idEntreprise)
                 .orElseThrow(()-> new EntityNotFoundException("Nous ne trouvons aucune information sur l'entreprise"));
-        List<Commande> commandes = commandeRepository.findAllByServiceEntrepriseIdEntreprise(idEntreprise);
+        List<Commande> commandes = commandeRepository.findAllByClientEntrepriseIdEntreprise(idEntreprise);
 
         List<CommandeResponse> result = new ArrayList<>();
 
         if (!commandes.isEmpty()){
             for (Commande commande: commandes) {
+                List<ElementCommandeDto> elements = new ArrayList<>();
+                for (com.mybizcopilot.entities.ElementCommande elementCmd : commande.getElementsCommande()) {
+                    elements.add(
+                            ElementCommandeDto.builder()
+                                    .idElement(elementCmd.getIdElementcommande())
+                                    .prix(elementCmd.getPrix())
+                                    .quantite(elementCmd.getQuantite())
+                                    .idSousservice(elementCmd.getSousService().getIdSousservice())
+                                    .build()
+                    );
+                }
                 result.add(
                         CommandeResponse.builder()
                                 .idCommande(commande.getIdCommande())
-                                .service(commande.getService().getLibelleService())
+                                .idClient(commande.getClient().getIdClient())
                                 .client(commande.getClient().getNomClient())
                                 .dateCommande(commande.getDateContact())
-                                .dateDebut(commande.getDateDebut())
                                 .dateFin(commande.getDateFin())
-                                .qte(commande.getQuantite())
-                                .duree(commande.getDuree())
                                 .avance(commande.getAvanceCout())
                                 .cout(commande.getCout())
                                 .dateAvance(commande.getDateAvance())
                                 .paye(commande.getPaye())
                                 .statutCommande(commande.getStatutCommande())
+                                .elements(elements)
                                 .build()
                 );
             }
@@ -132,7 +142,52 @@ public class CommandeService implements ICommandeService {
     }
 
     @Override
-    public CommandeResponse updateCommande(Integer idCommande, CommandeRequest request) {
+    @Transactional
+    public Void updateCommande(Integer idCommande, CommandeRequest request) {
+        commandeValidator.validate(request);
+        request.checkSomeField();
+
+        Commande commande = commandeRepository.findById(idCommande)
+                .orElseThrow(() -> new EntityNotFoundException("La commande sélectionnée est introuvable"));
+
+        Client client = clientRepository.findById(request.getIdClient())
+                .orElseThrow(() -> new EntityNotFoundException("Le client est introuvable"));
+        Double montant = 0.0;
+        if (request.getItems().isEmpty() || request.getItems().size() == 0)
+            throw new OperationNonPermittedException("Aucun service n'est commandé");
+
+        for (ElementCommandeDto item : request.getItems()) {
+            ElementCommande elementCommande = elementCommandeRepository.findByIdElementcommande(commande.getIdCommande());
+            SousService sousService = sousServiceRepository.findById(item.getIdSousservice()).get();
+            montant += item.getQuantite() * item.getPrix();
+
+            if (elementCommande != null && sousService != null){
+                elementCommande.setCommande(commande);
+                elementCommande.setPrix(item.getPrix());
+                elementCommande.setQuantite(item.getQuantite());
+                elementCommande.setSousService(sousService);
+                elementCommandeRepository.save(elementCommande);
+            } else if (elementCommande == null && sousService != null) {
+                elementCommandeRepository.save(ElementCommande.builder()
+                                .quantite(item.getQuantite())
+                                .sousService(sousService)
+                                .commande(commande)
+                                .prix(item.getPrix())
+                        .build()
+                );
+            }
+        }
+        commande.setClient(client);
+        commande.setAvanceCout(request.getAvance());
+        commande.setCout(montant);
+        commande.setDateAvance(request.getDateAvance());
+        commande.setDateContact(request.getDateContact());
+        commande.setPaye(request.getPaye());
+        commande.setDatePaiement(request.getDatePaiement());
+        commande.setDateFin(request.getDateFin());
+
+        commandeRepository.save(commande);
+
         return null;
     }
 }

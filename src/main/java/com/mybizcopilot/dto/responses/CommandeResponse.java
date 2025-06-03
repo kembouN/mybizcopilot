@@ -1,8 +1,10 @@
 package com.mybizcopilot.dto.responses;
 
+import com.mybizcopilot.entities.StatutCommande;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -10,20 +12,13 @@ import java.time.LocalDate;
 @Builder
 @Data
 public class CommandeResponse {
+    private Integer idClient;
 
     private Integer idCommande;
 
     private String client;
 
-    private String service;
-
     private LocalDate dateCommande;
-
-    private LocalDate dateDebut;
-
-    private Integer qte;
-
-    private Integer duree;
 
     private LocalDate dateFin;
 
@@ -37,5 +32,7 @@ public class CommandeResponse {
 
     private LocalDate datePaiement;
 
-    private String statutCommande;
+    private StatutCommande statutCommande;
+
+    private List<ElementCommandeDto> elements;
 }

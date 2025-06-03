@@ -3,10 +3,12 @@ package com.mybizcopilot.services.impl;
 import com.mybizcopilot.dto.requests.EntrepriseRequest;
 import com.mybizcopilot.dto.responses.EntrepriseResponse;
 import com.mybizcopilot.entities.Entreprise;
+import com.mybizcopilot.entities.Pays;
 import com.mybizcopilot.entities.Utilisateur;
 import com.mybizcopilot.exception.OperationNonPermittedException;
 import com.mybizcopilot.repositories.ClientRepository;
 import com.mybizcopilot.repositories.EntrepriseRepository;
+import com.mybizcopilot.repositories.PaysRepository;
 import com.mybizcopilot.repositories.UtilisateurRepository;
 import com.mybizcopilot.services.IEntrepriseService;
 import com.mybizcopilot.utils.UtilService;
@@ -42,6 +44,9 @@ public class EntrepriseService implements IEntrepriseService {
     @Autowired
     private UtilService utilService;
 
+    @Autowired
+    private PaysRepository paysRepository;
+
     private static final Logger log = LoggerFactory.getLogger(EntrepriseService.class);
 
     @Override
@@ -52,12 +57,13 @@ public class EntrepriseService implements IEntrepriseService {
         if (entrepriseRepository.countByNomEntreprise(request.getNom().trim()) > 0)
             throw new OperationNonPermittedException("Une entreprise de même nom existe déjà");
 
+        Pays pays = paysRepository.findById(request.getIdPays()).orElseThrow(() -> new EntityNotFoundException("Le pays choisit est introuvable"));
         entrepriseRepository.save(
                 Entreprise.builder()
                         .codeEntreprise(utilService.generateEnterpriseCode())
                         .descriptionEntreprise(request.getDescription())
                         .emailEntreprise(request.getEmail())
-                        .pays(request.getPays())
+                        .pays(pays)
                         .ville(request.getVille())
                         .nomEntreprise(request.getNom().trim())
                         .utilisateur(user)
@@ -134,10 +140,11 @@ public class EntrepriseService implements IEntrepriseService {
         if (!entreprise.getUtilisateur().getIdUtilisateur().equals(request.getIdUser())){
             throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
         }
+        Pays pays = paysRepository.findById(request.getIdPays()).orElseThrow(() -> new EntityNotFoundException("Le pays choisit est introuvable"));
 
         entreprise.setDescriptionEntreprise(request.getDescription());
         entreprise.setEmailEntreprise(request.getEmail());
-        entreprise.setPays(request.getPays());
+        entreprise.setPays(pays);
         entreprise.setVille(request.getVille());
         entreprise.setNomEntreprise(request.getNom());
         entreprise.setTelephone1Entreprise(request.getTelephone1());

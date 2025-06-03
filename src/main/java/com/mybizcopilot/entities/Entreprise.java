@@ -2,6 +2,7 @@ package com.mybizcopilot.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.List;
 
@@ -22,6 +23,10 @@ public class Entreprise extends BaseEntity {
     @JoinColumn(name = "id_utilisateur", unique = true)
     private Utilisateur utilisateur;
 
+    @ManyToOne
+    @JoinColumn(name = "id_pays")
+    private Pays pays;
+
     private String codeEntreprise;
 
     private String nomEntreprise;
@@ -32,8 +37,6 @@ public class Entreprise extends BaseEntity {
 
     private String telephone2Entreprise;
 
-    private String pays;
-
     private String ville;
 
     private String descriptionEntreprise;
@@ -42,5 +45,8 @@ public class Entreprise extends BaseEntity {
 
     @OneToMany(mappedBy = "entreprise")
     private List<Service> services;
+
+    @ColumnDefault("1")
+    private Integer isActive;
 
 }

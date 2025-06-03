@@ -205,7 +205,7 @@ public class ClientService implements IClientService {
                 .telephoneDeux(savedClient.getTelephoneDeux())
                 .nomClient(savedClient.getNomClient())
                 .statut(savedClient.getIsClient() == 1 ? "Client" : client.getTypeProspect().getLibelleTypeprospect())
-                .tranche(savedClient.getTranche().getLibelleTranche())
+                .tranche(savedClient.getTranche() != null ? savedClient.getTranche().getLibelleTranche() : null)
                 .ville(savedClient.getVille())
                 .adresse(savedClient.getAdresse())
                 .agentLiaison(savedClient.getAgentLiaison())

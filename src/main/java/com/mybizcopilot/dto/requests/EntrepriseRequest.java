@@ -22,7 +22,8 @@ public class EntrepriseRequest {
     @Email
     private String email;
 
-    private String pays;
+    @NotNull(message = "Veuillez choisir un pays")
+    private Integer idPays;
 
     private String ville;
 

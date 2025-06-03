@@ -1,22 +1,17 @@
 package com.mybizcopilot.entities;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Entity
-@NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "statutcommande")
 @Getter
-@Setter
-public class StatutCommande extends BaseEntity{
+public enum StatutCommande{
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer idStatutcommande;
+    EN_ATTENTE("EN ATTENTE"),
+    EN_COURS("EN COURS"),
+    TERMINEE("TERMINEE"),
+    ANNULEE("ANNULEE"),
+    LIVREE("LIVREE");
 
     private String libelle;
 }

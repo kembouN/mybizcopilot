@@ -29,7 +29,7 @@ public class CommandeController {
         );
     }
 
-    @GetMapping("{idCommande}")
+    @GetMapping("/{idCommande}")
     public ResponseEntity<BaseResponse<CommandeResponse>> getCommande(@PathVariable Integer idCommande) {
         return ResponseEntity.ok(
                 new BaseResponse<>(
@@ -40,7 +40,7 @@ public class CommandeController {
         );
     }
 
-    @GetMapping("get-by/entreprise/{idEntreprise}")
+    @GetMapping("/get-by/entreprise/{idEntreprise}")
     public ResponseEntity<BaseResponse<List<CommandeResponse>>> getAllCommandes(@PathVariable Integer idEntreprise) {
         return ResponseEntity.ok(
                 new BaseResponse<>(
@@ -51,6 +51,15 @@ public class CommandeController {
         );
     }
 
-
+    @PutMapping("/{idCommande}")
+    public ResponseEntity<BaseResponse<Void>> updateCommande(@PathVariable Integer idCommande,@RequestBody CommandeRequest request) {
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "Commande modifée",
+                        commandeService.updateCommande(idCommande, request)
+                )
+        );
+    }
 
 }
