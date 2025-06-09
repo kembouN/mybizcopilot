@@ -14,4 +14,9 @@ public interface ICommandeService {
     List<CommandeResponse> listeCommandes(Integer idEntreprise);
 
     Void updateCommande(Integer idCommande, CommandeRequest request);
+
+    Void affecterCommande(Integer idCommande, Integer idCollaborateur);
+
+    Void terminerCommande(Integer idCommande);
+
 }

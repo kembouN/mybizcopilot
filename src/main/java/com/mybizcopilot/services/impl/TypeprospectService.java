@@ -13,7 +13,7 @@ import java.util.List;
 @Service
 @AllArgsConstructor
 @NoArgsConstructor
-public class TYpeprospectService implements ITypeprospectService {
+public class TypeprospectService implements ITypeprospectService {
 
     @Autowired
     private TypeprospectRepository typeprospectRepository;

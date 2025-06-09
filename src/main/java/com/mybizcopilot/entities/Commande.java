@@ -26,6 +26,10 @@ public class Commande extends BaseEntity{
     @OneToMany(mappedBy = "commande")
     private List<ElementCommande> elementsCommande;
 
+    @ManyToOne
+    @JoinColumn(name = "id_collaborateur")
+    private Collaborateur collaborateur;
+
     private LocalDate dateContact;
 
     private LocalDate dateFin;

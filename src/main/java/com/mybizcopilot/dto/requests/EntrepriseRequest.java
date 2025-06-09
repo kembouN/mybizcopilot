@@ -27,6 +27,8 @@ public class EntrepriseRequest {
 
     private String ville;
 
+    private String adresse;
+
     @NotEmpty(message = "Veuillez renseigner le nom de votre entreprise")
     private String nom;
 

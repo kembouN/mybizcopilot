@@ -23,6 +23,8 @@ public class CollaborateurResponse {
 
     private String ville;
 
+    private int tache;
+
     private String adresse;
 
 }

@@ -39,6 +39,8 @@ public class Entreprise extends BaseEntity {
 
     private String ville;
 
+    private String adresse;
+
     private String descriptionEntreprise;
 
     private byte[] logoEntreprise;

@@ -34,5 +34,7 @@ public class CommandeResponse {
 
     private StatutCommande statutCommande;
 
+    private String collaborateur;
+
     private List<ElementCommandeDto> elements;
 }

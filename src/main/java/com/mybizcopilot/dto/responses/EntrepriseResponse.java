@@ -21,6 +21,8 @@ public class EntrepriseResponse {
 
     private String ville;
 
+    private String adresse;
+
     private byte[] logo;
 
     private String nom;

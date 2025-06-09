@@ -33,6 +33,8 @@ public class CommandeService implements ICommandeService {
 
     private EntrepriseRepository entrepriseRepository;
 
+    private CollaborateurRepository collaborateurRepository;
+
 
     @Override
     @Transactional
@@ -131,7 +133,9 @@ public class CommandeService implements ICommandeService {
                                 .cout(commande.getCout())
                                 .dateAvance(commande.getDateAvance())
                                 .paye(commande.getPaye())
+                                .datePaiement(commande.getDatePaiement())
                                 .statutCommande(commande.getStatutCommande())
+                                .collaborateur(commande.getCollaborateur() != null ? commande.getCollaborateur().getNom() : "")
                                 .elements(elements)
                                 .build()
                 );
@@ -188,6 +192,35 @@ public class CommandeService implements ICommandeService {
 
         commandeRepository.save(commande);
 
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public Void affecterCommande(Integer idCommande, Integer idCollaborateur) {
+        Commande commande = commandeRepository.findById(idCommande)
+                .orElseThrow(() -> new EntityNotFoundException("La commande est introuvable"));
+
+        Collaborateur collaborateur = collaborateurRepository.findById(idCollaborateur)
+                .orElseThrow(() -> new EntityNotFoundException("Le collaborateur associé est introuvable"));
+
+        commande.setCollaborateur(collaborateur);
+        commandeRepository.save(commande);
+        return null;
+    }
+
+    @Override
+    @Transactional
+    public Void terminerCommande(Integer idCommande) {
+        Commande commande = commandeRepository.findById(idCommande)
+                .orElseThrow(() -> new EntityNotFoundException("La commande est introuvable"));
+
+        if (commande.getStatutCommande().equals(StatutCommande.TERMINEE))
+            throw new OperationNonPermittedException("Cette commande est déjà terminée");
+        commande.setStatutCommande(StatutCommande.TERMINEE);
+        commandeRepository.save(
+                commande
+        );
         return null;
     }
 }

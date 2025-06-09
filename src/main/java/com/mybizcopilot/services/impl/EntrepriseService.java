@@ -65,6 +65,7 @@ public class EntrepriseService implements IEntrepriseService {
                         .emailEntreprise(request.getEmail())
                         .pays(pays)
                         .ville(request.getVille())
+                        .adresse(request.getAdresse())
                         .nomEntreprise(request.getNom().trim())
                         .utilisateur(user)
                         .telephone1Entreprise(request.getTelephone1())
@@ -86,6 +87,7 @@ public class EntrepriseService implements IEntrepriseService {
                 .email(entreprise.getEmailEntreprise())
                 .pays(entreprise.getPays())
                 .ville(entreprise.getVille())
+                .adresse(entreprise.getAdresse())
                 .logo(entreprise.getLogoEntreprise())
                 .nom(entreprise.getNomEntreprise())
                 .telephone1(entreprise.getTelephone1Entreprise())
@@ -112,6 +114,7 @@ public class EntrepriseService implements IEntrepriseService {
                                 .email(enterprise.getEmailEntreprise())
                                 .pays(enterprise.getPays())
                                 .ville(enterprise.getVille())
+                                .adresse(enterprise.getAdresse())
                                 .description(enterprise.getDescriptionEntreprise())
                                 .logo(enterprise.getLogoEntreprise())
                                 .nom(enterprise.getNomEntreprise())
@@ -146,6 +149,7 @@ public class EntrepriseService implements IEntrepriseService {
         entreprise.setEmailEntreprise(request.getEmail());
         entreprise.setPays(pays);
         entreprise.setVille(request.getVille());
+        entreprise.setAdresse(request.getAdresse());
         entreprise.setNomEntreprise(request.getNom());
         entreprise.setTelephone1Entreprise(request.getTelephone1());
         entreprise.setTelephone2Entreprise(request.getTelephone2());

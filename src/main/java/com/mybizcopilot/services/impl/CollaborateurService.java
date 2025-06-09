@@ -5,7 +5,9 @@ import com.mybizcopilot.dto.responses.CollaborateurResponse;
 import com.mybizcopilot.entities.Collaborateur;
 import com.mybizcopilot.entities.Entreprise;
 import com.mybizcopilot.entities.Pays;
+import com.mybizcopilot.entities.StatutCommande;
 import com.mybizcopilot.repositories.CollaborateurRepository;
+import com.mybizcopilot.repositories.CommandeRepository;
 import com.mybizcopilot.repositories.EntrepriseRepository;
 import com.mybizcopilot.repositories.PaysRepository;
 import com.mybizcopilot.services.ICollaborateurService;
@@ -36,6 +38,9 @@ public class CollaborateurService implements ICollaborateurService {
 
     @Autowired
     private ObjectValidator<CollaborateurRequest> collaborateurValidator;
+
+    @Autowired
+    private CommandeRepository commandeRepository;
 
 
     @Override
@@ -73,6 +78,7 @@ public class CollaborateurService implements ICollaborateurService {
 
         List<CollaborateurResponse> result = new ArrayList<>();
         for (Collaborateur collaborateur : collaborateurs){
+            int tache = commandeRepository.countByCollaborateurAndStatutCommandeIsNotLike(collaborateur, StatutCommande.TERMINEE);
             result.add(
                     CollaborateurResponse.builder()
                             .idCollaborateur(collaborateur.getIdCollaborateur())
@@ -82,6 +88,7 @@ public class CollaborateurService implements ICollaborateurService {
                             .telephoneDeux(collaborateur.getTelephoneDeux())
                             .adresse(collaborateur.getAdresse())
                             .ville(collaborateur.getVille())
+                            .tache(tache)
                             .build()
             );
         }

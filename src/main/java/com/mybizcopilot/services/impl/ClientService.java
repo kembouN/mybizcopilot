@@ -94,7 +94,7 @@ public class ClientService implements IClientService {
             Typeprospect typeprospect = typeprospectRepository.findById(request.getIdTypeprospect()).orElseThrow(() -> new OperationNonPermittedException("Vous n'avez pas renseigner le type de prospect"));
             client.setTypeProspect(typeprospect);
         }
-        if (request.getIdTranche() != null) {
+        if (request.getIdTranche() != null && request.getIdTranche() != 0) {
             Tranche tranche = trancheRepository.findById(request.getIdTranche()).orElseThrow(() -> new OperationNonPermittedException("La plage d'âge sélectionnée n'existe pas"));
             client.setTranche(tranche);
         }
