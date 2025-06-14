@@ -1,5 +1,6 @@
 package com.mybizcopilot.services.impl;
 
+import com.google.i18n.phonenumbers.NumberParseException;
 import com.mybizcopilot.dto.requests.ClientRequest;
 import com.mybizcopilot.dto.responses.ClientResponse;
 import com.mybizcopilot.entities.*;
@@ -47,6 +48,9 @@ public class ClientService implements IClientService {
     private PaysRepository paysRepository;
 
     @Autowired
+    private PhoneNumberService phoneNumberService;
+
+    @Autowired
     private UtilService utilService;
 
     @Autowired
@@ -64,6 +68,8 @@ public class ClientService implements IClientService {
     public Void ajouterClient(ClientRequest request) {
         clientValidator.validate(request);
         request.checkTypeProspect();
+        Pays pays = paysRepository.findById(request.getPaysId()).orElseThrow(() -> new EntityNotFoundException("Le pays choisit est introuvable"));
+        checkNumberValidity(pays, request.getTelephoneUn(), request.getTelephoneDeux());
 
         Entreprise entreprise = entrepriseRepository.findById(request.getIdEntreprise()).orElseThrow(() -> new OperationNonPermittedException("Les informations de votre entreprise sont introuvables"));
 
@@ -72,7 +78,6 @@ public class ClientService implements IClientService {
         if (user.getIdUtilisateur() != entreprise.getUtilisateur().getIdUtilisateur())
             throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
 
-        Pays pays = paysRepository.findById(request.getPaysId()).orElseThrow(() -> new EntityNotFoundException("Le pays choisit est introuvable"));
 
         Client client = Client.builder()
                         .codeClient(utilService.generateClientCode())
@@ -134,26 +139,36 @@ public class ClientService implements IClientService {
         List<Client> clients = clientRepository.findAllByEntreprise(entreprise);
         List<ClientResponse> result = new ArrayList<>();
         for (Client client: clients) {
-                result.add(
-                        ClientResponse.builder()
-                                .idClient(client.getIdClient())
-                                .code(client.getCodeClient())
-                                .emailUn(client.getEmailUn())
-                                .emailDeux(client.getEmailDeux())
-                                .telephoneUn(client.getTelephoneUn())
-                                .telephoneDeux(client.getTelephoneDeux())
-                                .nomClient(client.getNomClient())
-                                .statut(client.getIsClient() == 1 ? "Client" : client.getTypeProspect().getLibelleTypeprospect())
-                                .tranche(client.getTranche() != null ? client.getTranche().getLibelleTranche() : null)
-                                .typeprospectId(client.getTypeProspect() != null ? client.getTypeProspect().getIdTypeprospect() : null)
-                                .trancheId(client.getTranche() != null ? client.getTranche().getIdTranche() : null)
-                                .ville(client.getVille())
-                                .adresse(client.getAdresse())
-                                .agentLiaison(client.getAgentLiaison())
-                                .typeClient(client.getTypeClient())
-                                .pays(client.getPays())
-                                .build()
-                );
+            String number1 = "";
+            String number2 = "";
+            try{
+                if (!client.getTelephoneUn().isEmpty())
+                    number1 = phoneNumberService.formatForDisplay(client.getTelephoneUn(), client.getPays().getCodePays());
+                if (!client.getTelephoneDeux().isEmpty())
+                    number2 = phoneNumberService.formatForDisplay(client.getTelephoneDeux(), client.getPays().getAbreviationPays());
+            }catch (NumberParseException e){
+                e.printStackTrace();
+            }
+            result.add(
+                    ClientResponse.builder()
+                            .idClient(client.getIdClient())
+                            .code(client.getCodeClient())
+                            .emailUn(client.getEmailUn())
+                            .emailDeux(client.getEmailDeux())
+                            .telephoneUn(number1)
+                            .telephoneDeux(number2)
+                            .nomClient(client.getNomClient())
+                            .statut(client.getIsClient() == 1 ? "Client" : client.getTypeProspect().getLibelleTypeprospect())
+                            .tranche(client.getTranche() != null ? client.getTranche().getLibelleTranche() : null)
+                            .typeprospectId(client.getTypeProspect() != null ? client.getTypeProspect().getIdTypeprospect() : null)
+                            .trancheId(client.getTranche() != null ? client.getTranche().getIdTranche() : null)
+                            .ville(client.getVille())
+                            .adresse(client.getAdresse())
+                            .agentLiaison(client.getAgentLiaison())
+                            .typeClient(client.getTypeClient())
+                            .pays(client.getPays())
+                            .build()
+                    );
         }
         return result;
     }
@@ -163,6 +178,8 @@ public class ClientService implements IClientService {
     public ClientResponse updateClient(Integer idClient, ClientRequest request) {
         clientValidator.validate(request);
         request.checkTypeProspect();
+        Pays pays = paysRepository.findById(request.getPaysId()).orElseThrow(() -> new EntityNotFoundException("Le pays choisit est introuvable"));
+        checkNumberValidity(pays, request.getTelephoneUn(), request.getTelephoneDeux());
 
         Client client = clientRepository.findById(idClient).orElseThrow(() -> new EntityNotFoundException("Le client sélectionné est introuvable"));
         Entreprise entreprise = entrepriseRepository.findById(request.getIdEntreprise()).orElseThrow(() -> new OperationNonPermittedException("L'entreprise est introuvable"));
@@ -172,15 +189,20 @@ public class ClientService implements IClientService {
         if (user.getIdUtilisateur() != entreprise.getUtilisateur().getIdUtilisateur())
             throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
 
-        Typeprospect typeprospect = new Typeprospect();
+        Typeprospect typeprospect;
 
 
         client.setNomClient(request.getNom());
+        client.setPays(pays);
         client.setTelephoneUn(request.getTelephoneUn());
         client.setTelephoneDeux(request.getTelephoneDeux());
         client.setEmailUn(request.getEmailUn());
         client.setEmailDeux(request.getEmailDeux());
         client.setIsClient(request.getIsClient());
+        client.setAgentLiaison(request.getAgentLiaison());
+        client.setVille(request.getVille());
+        client.setAdresse(request.getAdresse());
+        client.setTypeClient(request.getTypeClient());
         if (request.getIdTypeprospect() != 0 && request.getIdTypeprospect() != null){
             typeprospect = typeprospectRepository.findById(request.getIdTypeprospect()).orElseThrow(() -> new OperationNonPermittedException("Vous n'avez pas renseigner le type de prospect"));
             client.setTypeProspect(typeprospect);
@@ -253,5 +275,14 @@ public class ClientService implements IClientService {
         return paysRepository.findAll();
     }
 
+
+    private void checkNumberValidity(Pays pays, String number1, String number2) {
+        if (!number1.isEmpty() && !phoneNumberService.isValidPhoneNumber(number1, pays.getAbreviationPays()))
+            throw new IllegalArgumentException("Le numéro de téléphone WhatsApp est invalide");
+
+        if (!number2.isEmpty() && !phoneNumberService.isValidPhoneNumber(number2, pays.getAbreviationPays()))
+            throw new IllegalArgumentException("Le numéro de téléphone est invalide");
+
+    }
 
 }

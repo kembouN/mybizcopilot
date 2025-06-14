@@ -1,5 +1,6 @@
 package com.mybizcopilot.services.impl;
 
+import com.google.i18n.phonenumbers.NumberParseException;
 import com.mybizcopilot.dto.requests.CollaborateurRequest;
 import com.mybizcopilot.dto.responses.CollaborateurResponse;
 import com.mybizcopilot.entities.Collaborateur;
@@ -42,6 +43,9 @@ public class CollaborateurService implements ICollaborateurService {
     @Autowired
     private CommandeRepository commandeRepository;
 
+    @Autowired
+    private PhoneNumberService phoneNumberService;
+
 
     @Override
     @Transactional
@@ -53,7 +57,7 @@ public class CollaborateurService implements ICollaborateurService {
 
         Pays pays = paysRepository.findById(request.getIdPays())
                 .orElseThrow(() -> new EntityNotFoundException("Le pays est introuvable"));
-
+        checkNumberValidity(pays, request.getTelephoneUn(), request.getTelephoneDeux());
         collaborateurRepository.save(
                 Collaborateur.builder()
                         .entreprise(entreprise)
@@ -79,13 +83,24 @@ public class CollaborateurService implements ICollaborateurService {
         List<CollaborateurResponse> result = new ArrayList<>();
         for (Collaborateur collaborateur : collaborateurs){
             int tache = commandeRepository.countByCollaborateurAndStatutCommandeIsNotLike(collaborateur, StatutCommande.TERMINEE);
+            String number1 = "";
+            String number2 = "";
+            try{
+                if (!collaborateur.getTelephoneUn().isEmpty())
+                    number1 = phoneNumberService.formatForDisplay(collaborateur.getTelephoneUn(), collaborateur.getPays().getCodePays());
+                if (!collaborateur.getTelephoneDeux().isEmpty())
+                    number2 = phoneNumberService.formatForDisplay(collaborateur.getTelephoneDeux(), collaborateur.getPays().getAbreviationPays());
+            }catch (NumberParseException e){
+                e.printStackTrace();
+            }
+
             result.add(
                     CollaborateurResponse.builder()
                             .idCollaborateur(collaborateur.getIdCollaborateur())
                             .pays(collaborateur.getPays())
                             .nom(collaborateur.getNom())
-                            .telephoneUn(collaborateur.getTelephoneUn())
-                            .telephoneDeux(collaborateur.getTelephoneDeux())
+                            .telephoneUn(number1)
+                            .telephoneDeux(number2)
                             .adresse(collaborateur.getAdresse())
                             .ville(collaborateur.getVille())
                             .tache(tache)
@@ -109,6 +124,7 @@ public class CollaborateurService implements ICollaborateurService {
         Pays pays = paysRepository.findById(request.getIdPays())
                 .orElseThrow(() -> new EntityNotFoundException("Le pays est introuvable"));
 
+        checkNumberValidity(pays, request.getTelephoneUn(), request.getTelephoneDeux());
         collaborateur.setEntreprise(entreprise);
         collaborateur.setPays(pays);
         collaborateur.setNom(request.getNomCollaborateur());
@@ -121,4 +137,14 @@ public class CollaborateurService implements ICollaborateurService {
 
         return null;
     }
+
+    private void checkNumberValidity(Pays pays, String number1, String number2) {
+        if (!number1.isEmpty() && !phoneNumberService.isValidPhoneNumber(number1, pays.getAbreviationPays()))
+            throw new IllegalArgumentException("Le numéro de téléphone WhatsApp est invalide");
+
+        if (!number2.isEmpty() && !phoneNumberService.isValidPhoneNumber(number2, pays.getAbreviationPays()))
+            throw new IllegalArgumentException("Le numéro de téléphone est invalide");
+
+    }
+
 }

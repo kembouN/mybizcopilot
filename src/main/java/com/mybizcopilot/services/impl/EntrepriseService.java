@@ -1,5 +1,6 @@
 package com.mybizcopilot.services.impl;
 
+import com.google.i18n.phonenumbers.NumberParseException;
 import com.mybizcopilot.dto.requests.EntrepriseRequest;
 import com.mybizcopilot.dto.responses.EntrepriseResponse;
 import com.mybizcopilot.entities.Entreprise;
@@ -45,6 +46,9 @@ public class EntrepriseService implements IEntrepriseService {
     private UtilService utilService;
 
     @Autowired
+    private PhoneNumberService phoneNumberService;
+
+    @Autowired
     private PaysRepository paysRepository;
 
     private static final Logger log = LoggerFactory.getLogger(EntrepriseService.class);
@@ -58,6 +62,7 @@ public class EntrepriseService implements IEntrepriseService {
             throw new OperationNonPermittedException("Une entreprise de même nom existe déjà");
 
         Pays pays = paysRepository.findById(request.getIdPays()).orElseThrow(() -> new EntityNotFoundException("Le pays choisit est introuvable"));
+        checkNumberValidity(pays, request.getTelephone1(), request.getTelephone2());
         entrepriseRepository.save(
                 Entreprise.builder()
                         .codeEntreprise(utilService.generateEnterpriseCode())
@@ -107,6 +112,17 @@ public class EntrepriseService implements IEntrepriseService {
 
         if (!entreprises.isEmpty()){
             for (Entreprise enterprise: entreprises) {
+                String number1 = "";
+                String number2 = "";
+                try{
+                    if (!enterprise.getTelephone1Entreprise().isEmpty())
+                        number1 = phoneNumberService.formatForDisplay(enterprise.getTelephone1Entreprise(), enterprise.getPays().getAbreviationPays());
+                    if (!enterprise.getTelephone2Entreprise().isEmpty())
+                        number2 = phoneNumberService.formatForDisplay(enterprise.getTelephone2Entreprise(), enterprise.getPays().getAbreviationPays());
+                }catch (NumberParseException e){
+                    e.printStackTrace();
+                }
+
                 result.add(
                         EntrepriseResponse.builder()
                                 .entrepriseId(enterprise.getIdEntreprise())
@@ -118,8 +134,8 @@ public class EntrepriseService implements IEntrepriseService {
                                 .description(enterprise.getDescriptionEntreprise())
                                 .logo(enterprise.getLogoEntreprise())
                                 .nom(enterprise.getNomEntreprise())
-                                .telephone1(enterprise.getTelephone1Entreprise())
-                                .telephone2(enterprise.getTelephone2Entreprise())
+                                .telephone1(number1)
+                                .telephone2(number2)
                                 .responsable(enterprise.getUtilisateur().getUsername())
                                 .nbrClient(clientRepository.findAllByEntreprise(enterprise).size())
                                 .build()
@@ -156,4 +172,14 @@ public class EntrepriseService implements IEntrepriseService {
 
         return entrepriseRepository.save(entreprise);
     }
+
+    private void checkNumberValidity(Pays pays, String number1, String number2) {
+        if (!number1.isEmpty() && !phoneNumberService.isValidPhoneNumber(number1, pays.getAbreviationPays()))
+            throw new IllegalArgumentException("Le téléphone n°1 est invalide");
+
+        if (!number2.isEmpty() && !phoneNumberService.isValidPhoneNumber(number2, pays.getAbreviationPays()))
+            throw new IllegalArgumentException("Le téléphone n°2 est invalide");
+
+    }
+
 }
