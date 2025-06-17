@@ -4,6 +4,7 @@ import com.mybizcopilot.dto.requests.CollaborateurRequest;
 import com.mybizcopilot.dto.responses.BaseResponse;
 import com.mybizcopilot.dto.responses.CollaborateurResponse;
 import com.mybizcopilot.services.ICollaborateurService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/collaborateur")
+@Tag(name = "Collaborateurs")
 public class CollaborateurController {
 
     private ICollaborateurService collaborateurService;

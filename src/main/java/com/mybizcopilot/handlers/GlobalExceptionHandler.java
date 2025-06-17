@@ -128,7 +128,7 @@ public class GlobalExceptionHandler {
         restClientException.printStackTrace();
         String[] content = new String[1];
         ExceptionRepresentation representation = ExceptionRepresentation.builder()
-                .message("Erreur lors de la communication avec le service de mail: "+restClientException.getMessage())
+                .message(restClientException.getMessage())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .content(content)
                 .build();

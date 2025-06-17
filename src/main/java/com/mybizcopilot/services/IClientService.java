@@ -12,7 +12,7 @@ public interface IClientService {
 
     ClientResponse getClient(Integer idClient);
 
-    List<ClientResponse> getAllClient(Integer idEntreprise);
+    List<ClientResponse> getAllClient(Integer idEntreprise, String nom, String typeClient, String localisation, Integer typeProspect);
 
     ClientResponse updateClient(Integer idClient, ClientRequest request);
 

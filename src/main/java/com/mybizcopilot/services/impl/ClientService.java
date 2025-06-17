@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -133,17 +134,24 @@ public class ClientService implements IClientService {
     }
 
     @Override
-    public List<ClientResponse> getAllClient(Integer idEntreprise) {
+    public List<ClientResponse> getAllClient(Integer idEntreprise, String nom, String typeClient, String localisation, Integer idTypeProspect) {
         Entreprise entreprise = entrepriseRepository.findById(idEntreprise).orElseThrow(() ->  new EntityNotFoundException("Aucune entreprise n'est retrouvée"));
 
-        List<Client> clients = clientRepository.findAllByEntreprise(entreprise);
+        Typeprospect typeprospect = typeprospectRepository.findByIdTypeprospect(idTypeProspect);
+        Specification<Client> clientSpecification = Specification
+                .where(ClientSpecification.clientNameEquals(nom)
+                        .and(ClientSpecification.typeCLientEquels(typeClient))
+                        .and(ClientSpecification.localisationEquals(localisation))
+                        .and(ClientSpecification.statutClientEquals(typeprospect))
+                );
+        List<Client> clients = clientRepository.findAll(clientSpecification);
         List<ClientResponse> result = new ArrayList<>();
         for (Client client: clients) {
             String number1 = "";
             String number2 = "";
             try{
                 if (!client.getTelephoneUn().isEmpty())
-                    number1 = phoneNumberService.formatForDisplay(client.getTelephoneUn(), client.getPays().getCodePays());
+                    number1 = phoneNumberService.formatForDisplay(client.getTelephoneUn(), client.getPays().getAbreviationPays());
                 if (!client.getTelephoneDeux().isEmpty())
                     number2 = phoneNumberService.formatForDisplay(client.getTelephoneDeux(), client.getPays().getAbreviationPays());
             }catch (NumberParseException e){

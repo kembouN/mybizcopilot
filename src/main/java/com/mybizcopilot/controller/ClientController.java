@@ -51,12 +51,18 @@ public class ClientController {
 
     @GetMapping("/client/get-by/entreprise/{idEntreprise}")
     @Operation(description = "Obtenir la liste des clients de l'entreprise")
-    public ResponseEntity<BaseResponse<List<ClientResponse>>> getAllByEntreprise(@PathVariable Integer idEntreprise) {
+    public ResponseEntity<BaseResponse<List<ClientResponse>>> getAllByEntreprise(
+            @PathVariable Integer idEntreprise,
+            @RequestParam(required = false) String nom,
+            @RequestParam(required = false) String typeClient,
+            @RequestParam(required = false) String localisation,
+            @RequestParam(required = false) Integer typeProspect
+            ) {
         return ResponseEntity.ok(
                 new BaseResponse<>(
                         HttpStatus.OK.value(),
                         "Liste des clients de l'entreprise",
-                        clientService.getAllClient(idEntreprise)
+                        clientService.getAllClient(idEntreprise, nom, typeClient, localisation, typeProspect)
                 )
         );
     }
