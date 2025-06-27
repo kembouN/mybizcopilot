@@ -3,6 +3,7 @@ package com.mybizcopilot.controller;
 import com.mybizcopilot.dto.requests.ChangePasswordRequest;
 import com.mybizcopilot.dto.requests.LoginRequest;
 import com.mybizcopilot.dto.requests.RegisterRequest;
+import com.mybizcopilot.dto.requests.UpdateUserRequest;
 import com.mybizcopilot.dto.responses.LoginResponse;
 import com.mybizcopilot.services.IUtilisateurService;
 import com.mybizcopilot.dto.responses.BaseResponse;
@@ -53,6 +54,18 @@ public class UtilisateurController {
                         HttpStatus.OK.value(),
                         "Mot de passe modifié",
                         utilisateurService.changePassword(idUser, request)
+                )
+        );
+    }
+
+    @PutMapping("{idUser}")
+    @Operation(description = "Mise à jour des informations d'un utilisateur")
+    public ResponseEntity<BaseResponse<LoginResponse>> updateUser(@PathVariable Integer idUser, @RequestBody UpdateUserRequest request) {
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "Informations modifiées",
+                        utilisateurService.changeUserInfo(idUser, request)
                 )
         );
     }

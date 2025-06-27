@@ -39,11 +39,4 @@ public class UtilService {
         return "CLI"+""+year+""+month+""+day+""+aleatoire;
     }
 
-
-    public void checkPasswordConfirmation(String pwd, String cPass) {
-        if (!pwd.equals(cPass)){
-            throw new OperationNonPermittedException("La confirmation du mot de passe est incorrecte");
-        }
-    }
-
 }

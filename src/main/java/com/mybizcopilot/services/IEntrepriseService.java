@@ -15,7 +15,7 @@ public interface IEntrepriseService {
 
     List<EntrepriseResponse> getAllEntrepriseByUser(Integer idUser);
 
-    Entreprise updateEntreprise(Integer idEnterprise, EntrepriseRequest request);
+    String updateEntreprise(Integer idEnterprise, EntrepriseRequest request);
 
 
 }

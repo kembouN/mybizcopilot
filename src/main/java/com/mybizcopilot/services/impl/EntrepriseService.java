@@ -148,8 +148,9 @@ public class EntrepriseService implements IEntrepriseService {
 
     @Override
     @Transactional
-    public Entreprise updateEntreprise(Integer idEnterprise, EntrepriseRequest request) {
+    public String updateEntreprise(Integer idEnterprise, EntrepriseRequest request) {
         entrepriseValidator.validate(request);
+        request.checkNotEmptyNumber();
         Entreprise entreprise = entrepriseRepository.findById(idEnterprise)
                 .orElseThrow(() -> {throw new EntityNotFoundException("L'entreprise est introuvable");});
 
@@ -160,7 +161,7 @@ public class EntrepriseService implements IEntrepriseService {
             throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
         }
         Pays pays = paysRepository.findById(request.getIdPays()).orElseThrow(() -> new EntityNotFoundException("Le pays choisit est introuvable"));
-
+        checkNumberValidity(pays, request.getTelephone1(), request.getTelephone2());
         entreprise.setDescriptionEntreprise(request.getDescription());
         entreprise.setEmailEntreprise(request.getEmail());
         entreprise.setPays(pays);
@@ -170,7 +171,8 @@ public class EntrepriseService implements IEntrepriseService {
         entreprise.setTelephone1Entreprise(request.getTelephone1());
         entreprise.setTelephone2Entreprise(request.getTelephone2());
 
-        return entrepriseRepository.save(entreprise);
+         Entreprise savedEntreprise = entrepriseRepository.save(entreprise);
+         return savedEntreprise.getNomEntreprise();
     }
 
     private void checkNumberValidity(Pays pays, String number1, String number2) {
@@ -179,7 +181,6 @@ public class EntrepriseService implements IEntrepriseService {
 
         if (!number2.isEmpty() && !phoneNumberService.isValidPhoneNumber(number2, pays.getAbreviationPays()))
             throw new IllegalArgumentException("Le téléphone n°2 est invalide");
-
     }
 
 }

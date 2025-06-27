@@ -5,6 +5,7 @@ import com.mybizcopilot.config.JwtUtil;
 import com.mybizcopilot.dto.requests.ChangePasswordRequest;
 import com.mybizcopilot.dto.requests.LoginRequest;
 import com.mybizcopilot.dto.requests.RegisterRequest;
+import com.mybizcopilot.dto.requests.UpdateUserRequest;
 import com.mybizcopilot.dto.responses.EntrepriseResponse;
 import com.mybizcopilot.dto.responses.LoginResponse;
 import com.mybizcopilot.entities.Entreprise;
@@ -47,6 +48,8 @@ public class UtilisateurService implements IUtilisateurService {
     private JwtUtil jwtUtil;
 
     private ObjectValidator<ChangePasswordRequest> changePasswordValidator;
+
+    private ObjectValidator<UpdateUserRequest> updateUserValidator;
 
     private AuthenticationManager authManager;
 
@@ -127,16 +130,34 @@ public class UtilisateurService implements IUtilisateurService {
     public Void changePassword(Integer idUser, ChangePasswordRequest request) {
 
         changePasswordValidator.validate(request);
-        utilService.checkPasswordConfirmation(request.getNewPassword(), request.getCPassword());
+       request.checkPasswordConfirmation();
 
         Utilisateur user = utilisateurRepository.findById(idUser).orElseThrow(() -> {throw new EntityNotFoundException("Compte utilisateur introuvable");});
         if(!passwordEncoder.matches(request.getPassword(), user.getMotpasse())) {
             throw new OperationNonPermittedException("Mot de passe incorrect");
         }
 
-        user.setMotpasse(passwordEncoder.encode(request.getPassword()));
+        user.setMotpasse(passwordEncoder.encode(request.getNewPassword()));
         utilisateurRepository.save(user);
 
         return null;
+    }
+
+    @Override
+    @Transactional
+    public LoginResponse changeUserInfo(Integer idUser, UpdateUserRequest request){
+        updateUserValidator.validate(request);
+        Utilisateur user = utilisateurRepository.findById(idUser).orElseThrow(() -> new EntityNotFoundException("Informations du compte introuvables"));
+        if (utilisateurRepository.countByUsernamExceptUser(idUser, request.getEmail()) > 0)
+            throw new OperationNonPermittedException("Cet email est déjà utilisé");
+
+        user.setNomUtilisateur(request.getNom().trim());
+        user.setUsername(request.getEmail());
+
+        Utilisateur saved = utilisateurRepository.save(user);
+        return LoginResponse.builder()
+                .username(user.getNomUtilisateur())
+                .email(saved.getUsername())
+                .build();
     }
 }

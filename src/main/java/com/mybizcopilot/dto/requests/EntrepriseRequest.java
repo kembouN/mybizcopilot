@@ -32,10 +32,14 @@ public class EntrepriseRequest {
     @NotEmpty(message = "Veuillez renseigner le nom de votre entreprise")
     private String nom;
 
-    @NotEmpty(message = "Vous devez renseigner au moins un numéro de téléphone")
     private String telephone1;
 
     private String telephone2;
 
     private MultipartFile logo;
+
+    public void checkNotEmptyNumber() {
+        if (telephone1.isEmpty() && telephone2.isEmpty())
+            throw new IllegalArgumentException("Renseignez au moins un numéro de téléphone");
+    }
 }

@@ -12,11 +12,18 @@ import lombok.*;
 @Data
 public class ChangePasswordRequest {
 
+    @NotEmpty(message = "Veuillez entrer votre mot de passe")
     private String password;
 
-    @NotEmpty(message = "Veuilez entrer un mot de passe")
+    @NotEmpty(message = "Veuillez entrer le nouveau mot de passe")
     @Size(min = 8, max = 20, message = "Le mot de passe doit comprendre entre 8 et 20 caractères")
     private String newPassword;
 
+    @NotEmpty(message = "Veuillez entrer la confimation du mot de passe")
     private String cPassword;
+
+    public void checkPasswordConfirmation(){
+        if (!newPassword.equals(cPassword))
+            throw new IllegalArgumentException("La confirmation du mot de passe est incorrecte");
+    }
 }

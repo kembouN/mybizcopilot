@@ -151,9 +151,9 @@ public class ClientService implements IClientService {
             String number2 = "";
             try{
                 if (!client.getTelephoneUn().isEmpty())
-                    number1 = phoneNumberService.formatForDisplay(client.getTelephoneUn(), client.getPays().getAbreviationPays());
+                    number1 = phoneNumberService.formatPhoneNumber(client.getTelephoneUn(), client.getPays().getAbreviationPays());
                 if (!client.getTelephoneDeux().isEmpty())
-                    number2 = phoneNumberService.formatForDisplay(client.getTelephoneDeux(), client.getPays().getAbreviationPays());
+                    number2 = phoneNumberService.formatPhoneNumber(client.getTelephoneDeux(), client.getPays().getAbreviationPays());
             }catch (NumberParseException e){
                 e.printStackTrace();
             }

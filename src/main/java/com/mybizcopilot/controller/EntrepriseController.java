@@ -36,7 +36,7 @@ public class EntrepriseController {
         );
     }
 
-    @GetMapping("/{idUtilisateur}")
+    @GetMapping("/user/{idUtilisateur}")
     @Operation(description = "Afficher les entreprises d'un utilisateur")
     public ResponseEntity<BaseResponse<List<EntrepriseResponse>>> getEntreprises(@PathVariable Integer idUtilisateur) {
         return ResponseEntity.ok(
@@ -48,9 +48,20 @@ public class EntrepriseController {
         );
     }
 
+    @GetMapping("/{idEntreprise}")
+    public ResponseEntity<BaseResponse<EntrepriseResponse>> getSpecificEntreprise(@PathVariable Integer idEntreprise) {
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "",
+                        entrepriseService.getEntreprise(idEntreprise)
+                )
+        );
+    }
+
     @PutMapping("/{idEntreprise}")
     @Operation(description = "Mettre à jour une entreprise")
-    public ResponseEntity<BaseResponse<Entreprise>> updateEnterprise(@PathVariable Integer idEntreprise, @RequestBody EntrepriseRequest request) {
+    public ResponseEntity<BaseResponse<String>> updateEnterprise(@PathVariable Integer idEntreprise, @RequestBody EntrepriseRequest request) {
         return ResponseEntity.ok(
                 new BaseResponse<>(
                         HttpStatus.OK.value(),
