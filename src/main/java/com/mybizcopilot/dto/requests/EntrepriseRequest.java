@@ -36,8 +36,6 @@ public class EntrepriseRequest {
 
     private String telephone2;
 
-    private MultipartFile logo;
-
     public void checkNotEmptyNumber() {
         if (telephone1.isEmpty() && telephone2.isEmpty())
             throw new IllegalArgumentException("Renseignez au moins un numéro de téléphone");

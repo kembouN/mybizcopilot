@@ -21,8 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @NoArgsConstructor
@@ -93,7 +96,7 @@ public class EntrepriseService implements IEntrepriseService {
                 .pays(entreprise.getPays())
                 .ville(entreprise.getVille())
                 .adresse(entreprise.getAdresse())
-                .logo(entreprise.getLogoEntreprise())
+                .logo(entreprise.getLogoEntreprise().length > 0 ? Base64.getEncoder().encodeToString(entreprise.getLogoEntreprise()) : "")
                 .nom(entreprise.getNomEntreprise())
                 .telephone1(entreprise.getTelephone1Entreprise())
                 .telephone2(entreprise.getTelephone2Entreprise())
@@ -132,7 +135,7 @@ public class EntrepriseService implements IEntrepriseService {
                                 .ville(enterprise.getVille())
                                 .adresse(enterprise.getAdresse())
                                 .description(enterprise.getDescriptionEntreprise())
-                                .logo(enterprise.getLogoEntreprise())
+                                .logo(enterprise.getLogoEntreprise().length > 0 ? Base64.getEncoder().encodeToString(enterprise.getLogoEntreprise()) : "")
                                 .nom(enterprise.getNomEntreprise())
                                 .telephone1(number1)
                                 .telephone2(number2)
@@ -152,14 +155,14 @@ public class EntrepriseService implements IEntrepriseService {
         entrepriseValidator.validate(request);
         request.checkNotEmptyNumber();
         Entreprise entreprise = entrepriseRepository.findById(idEnterprise)
-                .orElseThrow(() -> {throw new EntityNotFoundException("L'entreprise est introuvable");});
+                .orElseThrow(() -> new EntityNotFoundException("L'entreprise est introuvable"));
 
         Utilisateur user = utilisateurRepository.findById(request.getIdUser())
-                .orElseThrow(() -> {throw new OperationNonPermittedException("Le compte utilisateur est introuvable");
-                });
-        if (!entreprise.getUtilisateur().getIdUtilisateur().equals(request.getIdUser())){
+                .orElseThrow(() -> new OperationNonPermittedException("Le compte utilisateur est introuvable"));
+
+        if (!entreprise.getUtilisateur().getIdUtilisateur().equals(request.getIdUser()))
             throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
-        }
+
         Pays pays = paysRepository.findById(request.getIdPays()).orElseThrow(() -> new EntityNotFoundException("Le pays choisit est introuvable"));
         checkNumberValidity(pays, request.getTelephone1(), request.getTelephone2());
         entreprise.setDescriptionEntreprise(request.getDescription());
@@ -173,6 +176,25 @@ public class EntrepriseService implements IEntrepriseService {
 
          Entreprise savedEntreprise = entrepriseRepository.save(entreprise);
          return savedEntreprise.getNomEntreprise();
+    }
+
+    /**
+     * @param idEts
+     * @param logo
+     * @return
+     */
+    @Override
+    public Void uploadLogo(Integer idEts, MultipartFile logo) {
+        Entreprise entreprise = entrepriseRepository.findById(idEts)
+                .orElseThrow(() -> new EntityNotFoundException("Informations sur l'entreprise introuvables"));
+        try {
+            entreprise.setLogoEntreprise(logo.getBytes());
+            entrepriseRepository.save(entreprise);
+        }catch (IOException e){
+            e.printStackTrace();
+            throw new IllegalArgumentException("Erreur lors du chargement du logo");
+        }
+        return null;
     }
 
     private void checkNumberValidity(Pays pays, String number1, String number2) {

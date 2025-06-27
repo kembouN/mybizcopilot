@@ -43,6 +43,8 @@ public class Entreprise extends BaseEntity {
 
     private String descriptionEntreprise;
 
+    @Lob
+    @Column(columnDefinition = "MEDIUMBLOB")
     private byte[] logoEntreprise;
 
     @OneToMany(mappedBy = "entreprise")

@@ -23,7 +23,7 @@ public class EntrepriseResponse {
 
     private String adresse;
 
-    private byte[] logo;
+    private String logo;
 
     private String nom;
 

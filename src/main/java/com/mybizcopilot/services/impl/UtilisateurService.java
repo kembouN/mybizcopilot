@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 @AllArgsConstructor
@@ -109,7 +110,7 @@ public class UtilisateurService implements IUtilisateurService {
                                 .nom(entreprise.getNomEntreprise())
                                 .email(entreprise.getEmailEntreprise())
                                 .entrepriseId(entreprise.getIdEntreprise())
-                                .logo(entreprise.getLogoEntreprise())
+                                .logo(entreprise.getLogoEntreprise().length > 0 ? Base64.getEncoder().encodeToString(entreprise.getLogoEntreprise()) : "")
                                 .build()
                 );
             }

@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -67,6 +68,18 @@ public class EntrepriseController {
                         HttpStatus.OK.value(),
                         "Mise à jour effectuée",
                         entrepriseService.updateEntreprise(idEntreprise, request)
+                )
+        );
+    }
+
+    @PostMapping("/{idEntreprise}/upload-logo")
+    @Operation(description = "Ajouter un logo à l'entreprise")
+    public ResponseEntity<BaseResponse<Void>> uploadLogo(@PathVariable Integer idEntreprise, @RequestParam("logo")MultipartFile logo) {
+        return ResponseEntity.ok(
+                new BaseResponse<>(
+                        HttpStatus.OK.value(),
+                        "Logo mis à jour",
+                        entrepriseService.uploadLogo(idEntreprise, logo)
                 )
         );
     }
