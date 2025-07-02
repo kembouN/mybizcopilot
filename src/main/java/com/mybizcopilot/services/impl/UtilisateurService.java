@@ -110,7 +110,7 @@ public class UtilisateurService implements IUtilisateurService {
                                 .nom(entreprise.getNomEntreprise())
                                 .email(entreprise.getEmailEntreprise())
                                 .entrepriseId(entreprise.getIdEntreprise())
-                                .logo(entreprise.getLogoEntreprise().length > 0 ? Base64.getEncoder().encodeToString(entreprise.getLogoEntreprise()) : "")
+                                .logo(entreprise.getLogoEntreprise() != null ? Base64.getEncoder().encodeToString(entreprise.getLogoEntreprise()) : "")
                                 .build()
                 );
             }
