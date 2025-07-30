@@ -139,7 +139,8 @@ public class ClientService implements IClientService {
 
         Typeprospect typeprospect = typeprospectRepository.findByIdTypeprospect(idTypeProspect);
         Specification<Client> clientSpecification = Specification
-                .where(ClientSpecification.clientNameEquals(nom)
+                .where(ClientSpecification.clientEtsEquals(entreprise)
+                        .and(ClientSpecification.clientNameEquals(nom))
                         .and(ClientSpecification.typeCLientEquels(typeClient))
                         .and(ClientSpecification.localisationEquals(localisation))
                         .and(ClientSpecification.statutClientEquals(typeprospect))

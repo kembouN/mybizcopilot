@@ -45,7 +45,7 @@ public class SousServiceService implements ISousServiceService {
         sousServiceValidator.validate(request);
         com.mybizcopilot.entities.Service service = serviceRepository.findById(request.getIdService())
                 .orElseThrow(() -> new EntityNotFoundException("Le service correspondant est introuvable"));
-        if (sousServiceRepository.countAllByLibelleIgnoreCase(request.getLibelle().trim()) > 0) {
+        if (sousServiceRepository.countAllByLibelleIgnoreCase(request.getLibelle().trim(), service) > 0) {
             throw new OperationNonPermittedException("Un sous-service ayant ce libellé existe déjà dans ce service ");
         }
 
@@ -98,7 +98,7 @@ public class SousServiceService implements ISousServiceService {
                 .orElseThrow(() -> new EntityNotFoundException("Le sous-service sélectionné est introuvable"));
         com.mybizcopilot.entities.Service service = serviceRepository.findById(request.getIdService())
                 .orElseThrow(() -> new EntityNotFoundException("Le service correspondant est introuvable"));
-        if (sousServiceRepository.countAllSousServiceWithLibelleAndNotWithId(request.getLibelle().trim(), idSousService) > 0) {
+        if (sousServiceRepository.countAllSousServiceWithLibelleAndNotWithId(request.getLibelle().trim(), idSousService, service) > 0) {
             throw new OperationNonPermittedException("Un sous-service ayant ce libellé existe déjà dans ce service ");
         }
 

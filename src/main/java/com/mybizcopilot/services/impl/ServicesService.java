@@ -39,14 +39,16 @@ public class ServicesService implements IServicesService {
     @Transactional
     public Void ajouterService(ServiceRequest request) {
         serviceValidator.validate(request);
-        if (serviceRepository.countByLibelleService(request.getLibelle().toLowerCase().trim()) > 0){
+
+        Entreprise entreprise = entrepriseRepository.findById(request.getIdEntreprise())
+                .orElseThrow(() -> new EntityNotFoundException("Aucune entreprise correspondante"));
+        if (!entreprise.getUtilisateur().getIdUtilisateur().equals(request.getIdUser()))
+            throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
+
+        if (serviceRepository.countByLibelleService(request.getLibelle().toLowerCase().trim(), entreprise) > 0){
             throw new OperationNonPermittedException("Un service avec ce libellé existe déjà");
         }
 
-        Entreprise entreprise = entrepriseRepository.findById(request.getIdEntreprise())
-                        .orElseThrow(() -> new EntityNotFoundException("Aucune entreprise correspondante"));
-        if (!entreprise.getUtilisateur().getIdUtilisateur().equals(request.getIdUser()))
-            throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
         serviceRepository.save(
                 com.mybizcopilot.entities.Service.builder()
                         .descriptionService(request.getDescription())
@@ -76,7 +78,6 @@ public class ServicesService implements IServicesService {
 
     @Override
     public List<ServiceResponse> listeServices(Integer idEntreprise) {
-        log.info("Début pour liste des services");
         entrepriseRepository.findById(idEntreprise)
                 .orElseThrow(() -> new EntityNotFoundException("Entreprise introuvable"));
 
@@ -102,7 +103,13 @@ public class ServicesService implements IServicesService {
 
     @Override
     public ServiceResponse updateService(Integer idService, ServiceRequest request) {
-        if (serviceRepository.countByLibelleServiceWhereIdServiceNot(request.getLibelle().trim(), idService) > 0){
+        serviceValidator.validate(request);
+        Entreprise entreprise = entrepriseRepository.findById(request.getIdEntreprise())
+                .orElseThrow(() -> new EntityNotFoundException("Aucune entreprise correspondante"));
+        if (!entreprise.getUtilisateur().getIdUtilisateur().equals(request.getIdUser()))
+            throw new OperationNonPermittedException("Vous n'êtes pas autorisé à effectuer cette opération");
+
+        if (serviceRepository.countByLibelleServiceWhereIdServiceNot(request.getLibelle().trim(), idService, entreprise) > 0){
             log.error("Service existant");
             throw new OperationNonPermittedException("Un service avec ce libellé existe déjà");
         }

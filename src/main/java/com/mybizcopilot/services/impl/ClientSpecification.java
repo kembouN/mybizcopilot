@@ -1,6 +1,7 @@
 package com.mybizcopilot.services.impl;
 
 import com.mybizcopilot.entities.Client;
+import com.mybizcopilot.entities.Entreprise;
 import com.mybizcopilot.entities.Pays;
 import com.mybizcopilot.entities.Typeprospect;
 import jakarta.persistence.criteria.Join;
@@ -9,6 +10,13 @@ import org.springframework.data.jpa.domain.Specification;
 
 public class ClientSpecification {
 
+    public static Specification<Client> clientEtsEquals(Entreprise entreprise) {
+        return ((root, query, criteriaBuilder) -> {
+            if (entreprise == null)
+                return null;
+            return criteriaBuilder.equal(root.get("entreprise"), entreprise);
+        });
+    }
     public static Specification<Client> clientNameEquals(String name) {
         return ((root, query, criteriaBuilder) -> {
             if (name == null || name.isEmpty())
